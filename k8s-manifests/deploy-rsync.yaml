@@ -24,11 +24,13 @@ spec:
               secretKeyRef:
                 name: rsync-user-secret
                 key: username
+                optional: false
           - name: NEW_USER_PWD
             valueFrom:
               secretKeyRef:
                 name: rsync-user-secret
                 key: password
+                optional: false
         command:
         - /bin/sh
         - -c

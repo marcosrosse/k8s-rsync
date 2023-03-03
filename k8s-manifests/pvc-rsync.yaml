@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rsync-data-pvc
+spec:
+  resources:
+    requests:
+      storage: 300Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
