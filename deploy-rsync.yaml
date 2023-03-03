@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rsync
+  name: rsync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rsync
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: rsync
+    spec:
+      containers:
+      - image: eeacms/rsync
+        name: rsync
+        env:
+          - name: NEW_USER
+            valueFrom:
+              secretKeyRef:
+                name: rsync-user-secret
+                key: username
+          - name: NEW_USER_PWD
+            valueFrom:
+              secretKeyRef:
+                name: rsync-user-secret
+                key: password
+        command:
+        - /bin/sh
+        - -c
+        - adduser -h /home/$NEW_USER -s /bin/sh -D $NEW_USER; echo -n '$NEW_USER:$NEW_USER_PWD' | chpasswd; ssh-keygen -A; exec /usr/sbin/sshd -D -e "$@"
+        ports:
+          - containerPort: 22
+            name: ssh
+            protocol: TCP
+        resources: {}
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: sshd-config
+          mountPath: /etc/ssh/sshd_config
+          subPath: sshd_config
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: rsync-data-pvc
+        - name: sshd-config
+          configMap:
+            name: sshd-config-cm
+            defaultMode: 420
+            items:
+              - key: sshd_config
+                path: sshd_config
